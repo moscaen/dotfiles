@@ -38,6 +38,11 @@ else
   export EDITOR='nvim'
 fi
 
+# WSL-only Neovide alias
+if ! $IS_MACOS; then
+  alias neovide='neovide.exe --wsl'
+fi
+
 # ──────────────────────────────────────────────
 # PATH
 # ──────────────────────────────────────────────
