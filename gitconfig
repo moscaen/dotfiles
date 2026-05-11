@@ -1,0 +1,7 @@
+[user]
+	email = enrico.mosca@proton.me 
+	name = Enrico Mosca
+[core]
+	fileMode = false
+[fetch]
+	prune = true
