@@ -126,5 +126,36 @@ if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
   fi
 fi
 
+# ──────────────────────────────────────────────
+# VS Code — Catppuccin Macchiato theme
+# (WSL only: patches the Windows-side settings.json)
+# ──────────────────────────────────────────────
+if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
+  echo ""
+  echo "==> Patching VS Code with Catppuccin Macchiato..."
+
+  WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+  VSCODE_SETTINGS="/mnt/c/Users/$WIN_USER/AppData/Roaming/Code/User/settings.json"
+
+  if [ ! -f "$VSCODE_SETTINGS" ]; then
+    echo "  [skip] VS Code settings.json not found — is VS Code installed on Windows?"
+  elif ! command -v jq &>/dev/null; then
+    echo "  [skip] jq not installed"
+  else
+    cp "$VSCODE_SETTINGS" "${VSCODE_SETTINGS}.backup"
+
+    jq '
+      .["workbench.colorTheme"]         = "Catppuccin Macchiato" |
+      .["workbench.iconTheme"]          = "catppuccin-macchiato" |
+      .["catppuccin.accentColor"]       = "blue"
+    ' "$VSCODE_SETTINGS" > /tmp/vscode_settings.json \
+      && mv /tmp/vscode_settings.json "$VSCODE_SETTINGS"
+
+    echo "  [applied] color theme, icon theme, accent color"
+    echo "  [backup]  original saved to ${VSCODE_SETTINGS}.backup"
+    echo "  [note]    install extensions if not done: catppuccin.catppuccin-vsc + catppuccin.catppuccin-vsc-icons"
+  fi
+fi
+
 echo ""
 echo "Done! Create ~/.secrets.zsh for tokens/credentials (not tracked by git)."

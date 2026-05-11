@@ -100,9 +100,16 @@ else
   sudo install "/tmp/vivid-v${VIVID_VERSION}-x86_64-unknown-linux-musl/vivid" /usr/local/bin/vivid
   rm -rf /tmp/vivid.tar.gz "/tmp/vivid-v${VIVID_VERSION}-x86_64-unknown-linux-musl"
 fi
-
-install_if_missing ranger
-install_if_missing bat
+# bat is not in standard apt — install .deb from GitHub releases (sharkdp/bat)
+if command -v bat &>/dev/null; then
+  echo "  [ok] bat already installed"
+else
+  echo "  [install] bat..."
+  BAT_VERSION=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest     | grep '"tag_name"' | cut -d'"' -f4 | sed 's/v//')
+  curl -Lo /tmp/bat.deb     "https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb"
+  sudo dpkg -i /tmp/bat.deb
+  rm -f /tmp/bat.deb
+fi
 install_if_missing tldr
 
 # ──────────────────────────────────────────────
@@ -283,6 +290,27 @@ if $IS_MACOS; then
     echo "  [install] MesloLGS Nerd Font..."
     brew install --cask font-meslo-lg-nerd-font
   fi
+fi
+
+# ──────────────────────────────────────────────
+# VS Code extensions
+# ──────────────────────────────────────────────
+echo ""
+echo "==> VS Code extensions"
+if command -v code &>/dev/null; then
+  install_vscode_ext() {
+    local ext="$1"
+    if code --list-extensions 2>/dev/null | grep -qi "^${ext}$"; then
+      echo "  [ok] $ext already installed"
+    else
+      echo "  [install] $ext..."
+      code --install-extension "$ext" --force
+    fi
+  }
+  install_vscode_ext "catppuccin.catppuccin-vsc"
+  install_vscode_ext "catppuccin.catppuccin-vsc-icons"
+else
+  echo "  [skip] 'code' not in PATH — extensions will be applied by install.sh when VS Code is available"
 fi
 
 # ──────────────────────────────────────────────
