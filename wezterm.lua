@@ -3,7 +3,11 @@ local wezterm = require("wezterm")
 local config = wezterm.config_builder()
 
 config.color_scheme = "Catppuccin Macchiato"
-config.font = wezterm.font("MesloLGS NF")
+config.font = wezterm.font_with_fallback({
+  wezterm.font("MesloLGS NF"),
+  wezterm.font("Cascadia Code PL"),
+  wezterm.font("DejaVu Sans Mono"),
+})
 
 config.keys = {
 	{

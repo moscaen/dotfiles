@@ -55,7 +55,6 @@ install_if_missing() {
 echo ""
 echo "==> Shell & prompt"
 install_if_missing zsh
-
 # starship is not in apt — use the official installer
 if command -v starship &>/dev/null; then
   echo "  [ok] starship already installed"
@@ -71,7 +70,6 @@ echo ""
 echo "==> Terminal tools"
 install_if_missing tmux
 install_if_missing fzf
-
 # eza is not in standard apt — add the official eza apt repo
 if command -v eza &>/dev/null; then
   echo "  [ok] eza already installed"
@@ -100,9 +98,17 @@ else
   sudo install "/tmp/vivid-v${VIVID_VERSION}-x86_64-unknown-linux-musl/vivid" /usr/local/bin/vivid
   rm -rf /tmp/vivid.tar.gz "/tmp/vivid-v${VIVID_VERSION}-x86_64-unknown-linux-musl"
 fi
-
 install_if_missing ranger
-install_if_missing bat
+# bat is not in standard apt — install .deb from GitHub releases (sharkdp/bat)
+if command -v bat &>/dev/null; then
+  echo "  [ok] bat already installed"
+else
+  echo "  [install] bat..."
+  BAT_VERSION=$(curl -s https://api.github.com/repos/sharkdp/bat/releases/latest     | grep '"tag_name"' | cut -d'"' -f4 | sed 's/v//')
+  curl -Lo /tmp/bat.deb     "https://github.com/sharkdp/bat/releases/download/v${BAT_VERSION}/bat_${BAT_VERSION}_amd64.deb"
+  sudo dpkg -i /tmp/bat.deb
+  rm -f /tmp/bat.deb
+fi
 install_if_missing tldr
 
 # ──────────────────────────────────────────────
@@ -111,9 +117,11 @@ install_if_missing tldr
 echo ""
 echo "==> Search & navigation"
 install_if_missing rg ripgrep
-# fd is packaged as 'fd-find' in apt; symlink it to 'fd'
+# fd is packaged as 'fd-find' on Debian/Ubuntu; symlink to 'fd'
 if command -v fd &>/dev/null; then
   echo "  [ok] fd already installed"
+elif $IS_MACOS; then
+  $PKG_INSTALL fd
 else
   echo "  [install] fd-find..."
   sudo apt-get install -y fd-find
@@ -126,13 +134,52 @@ install_if_missing zoxide
 # ──────────────────────────────────────────────
 echo ""
 echo "==> Editor"
-install_if_missing nvim neovim
+
+if command -v nvim &>/dev/null; then
+  echo "  [ok] nvim already installed"
+elif $IS_MACOS; then
+  $PKG_INSTALL neovim
+else
+  # apt ships 0.6 on Ubuntu 22.04 — install latest from GitHub tarball
+  echo "  [install] nvim (latest stable)..."
+  NVIM_VERSION=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest \
+    | grep '"tag_name"' | cut -d'"' -f4)
+  curl -Lo /tmp/nvim.tar.gz \
+    "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
+  sudo tar -xzf /tmp/nvim.tar.gz -C /opt/
+  sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
+  rm -f /tmp/nvim.tar.gz
+fi
+
+# neovide
 if $IS_MACOS; then
   if ! command -v neovide &>/dev/null; then
     echo "  [install] neovide..."
     $CASK_INSTALL neovide
   else
     echo "  [ok] neovide already installed"
+  fi
+elif grep -qi microsoft /proc/version 2>/dev/null; then
+  # install following https://neovide.dev/installation.html
+  # WSL: neovide is a Windows GUI app — install it on the Windows side.
+  # Download from: https://github.com/neovide/neovide/releases/latest
+  # Then add it to your Windows PATH so it can be launched from WSL.
+  if command -v neovide.exe &>/dev/null; then
+    echo "  [ok] neovide already accessible from WSL"
+  else
+    echo "  [info] neovide: install the Windows .msi from https://github.com/neovide/neovide/releases"
+    echo "         then ensure neovide.exe is on your Windows PATH"
+  fi
+else
+  # Native Linux: install neovide AppImage
+  if command -v neovide &>/dev/null; then
+    echo "  [ok] neovide already installed"
+  else
+    echo "  [install] neovide..."
+    NEOVIDE_VERSION=$(curl -s https://api.github.com/repos/neovide/neovide/releases/latest       | grep '"tag_name"' | cut -d'"' -f4)
+    curl -Lo /tmp/neovide.tar.gz       "https://github.com/neovide/neovide/releases/download/${NEOVIDE_VERSION}/neovide-linux-x86_64.tar.gz"
+    sudo tar -xzf /tmp/neovide.tar.gz -C /usr/local/bin/
+    rm -f /tmp/neovide.tar.gz
   fi
 fi
 
@@ -154,18 +201,7 @@ else
   sudo install /tmp/lazygit /usr/local/bin/lazygit
   rm /tmp/lazygit.tar.gz /tmp/lazygit
 fi
-# glab is not in standard apt — install .deb from GitHub releases
-if command -v glab &>/dev/null; then
-  echo "  [ok] glab already installed"
-else
-  echo "  [install] glab..."
-  GLAB_VERSION=$(curl -s https://api.github.com/repos/gitlab-org/cli/releases/latest \
-    | grep '"tag_name"' | cut -d'"' -f4 | sed 's/v//')
-  curl -Lo /tmp/glab.deb \
-    "https://github.com/gitlab-org/cli/releases/download/v${GLAB_VERSION}/glab_${GLAB_VERSION}_linux_amd64.deb"
-  sudo dpkg -i /tmp/glab.deb
-  rm -f /tmp/glab.deb
-fi
+
 
 # ──────────────────────────────────────────────
 # Python tooling
@@ -274,15 +310,73 @@ fi
 # ──────────────────────────────────────────────
 # Font (Nerd Font for icons)
 # ──────────────────────────────────────────────
+echo ""
+echo "==> Font"
 if $IS_MACOS; then
-  echo ""
-  echo "==> Font"
   if brew list --cask font-meslo-lg-nerd-font &>/dev/null 2>&1; then
     echo "  [ok] MesloLGS NF already installed"
   else
     echo "  [install] MesloLGS Nerd Font..."
     brew install --cask font-meslo-lg-nerd-font
   fi
+else
+  # Linux/WSL: install monospace font with variants and MesloLGS NF
+  install_if_missing curl
+  install_if_missing fc-cache fontconfig
+  if command -v apt-get &>/dev/null; then
+    $PKG_INSTALL fonts-liberation2
+    $PKG_INSTALL fonts-dejavu-core
+  fi
+
+  FONT_DIR="/usr/local/share/fonts/meslo-lg-nerd-font"
+  sudo mkdir -p "$FONT_DIR"
+
+  declare -a meslo_fonts=(
+    "MesloLGS NF Regular.ttf"
+    "MesloLGS NF Bold.ttf"
+    "MesloLGS NF Italic.ttf"
+    "MesloLGS NF Bold Italic.ttf"
+  )
+  declare -a meslo_urls=(
+    "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Regular.ttf"
+    "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold.ttf"
+    "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Italic.ttf"
+    "https://github.com/romkatv/powerlevel10k-media/raw/master/MesloLGS%20NF%20Bold%20Italic.ttf"
+  )
+
+  for i in "${!meslo_fonts[@]}"; do
+    font_file="$FONT_DIR/${meslo_fonts[i]}"
+    if [ -f "$font_file" ]; then
+      echo "  [ok] ${meslo_fonts[i]} already installed"
+    else
+      echo "  [install] ${meslo_fonts[i]}..."
+      sudo curl -fsSL -o "$font_file" "${meslo_urls[i]}"
+    fi
+  done
+
+  sudo fc-cache -fv &>/dev/null || true
+  echo "  [ok] MesloLGS NF fonts configured"
+fi
+
+# ──────────────────────────────────────────────
+# VS Code extensions
+# ──────────────────────────────────────────────
+echo ""
+echo "==> VS Code extensions"
+if command -v code &>/dev/null; then
+  install_vscode_ext() {
+    local ext="$1"
+    if code --list-extensions 2>/dev/null | grep -qi "^${ext}$"; then
+      echo "  [ok] $ext already installed"
+    else
+      echo "  [install] $ext..."
+      code --install-extension "$ext" --force
+    fi
+  }
+  install_vscode_ext "catppuccin.catppuccin-vsc"
+  install_vscode_ext "catppuccin.catppuccin-vsc-icons"
+else
+  echo "  [skip] 'code' not in PATH — extensions will be applied by install.sh when VS Code is available"
 fi
 
 # ──────────────────────────────────────────────
