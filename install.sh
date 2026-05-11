@@ -17,7 +17,6 @@ files=(
   "wezterm.lua:.wezterm.lua"
   "vimrc:.vimrc"
   "config/starship.toml:.config/starship.toml"
-  "config/glab-cli/aliases.yml:.config/glab-cli/aliases.yml"
   "config/nvim:.config/nvim"
 )
 

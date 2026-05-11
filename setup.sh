@@ -117,7 +117,16 @@ install_if_missing tldr
 echo ""
 echo "==> Search & navigation"
 install_if_missing rg ripgrep
-install_if_missing fd
+# fd is packaged as 'fd-find' on Debian/Ubuntu; symlink to 'fd'
+if command -v fd &>/dev/null; then
+  echo "  [ok] fd already installed"
+elif $IS_MACOS; then
+  $PKG_INSTALL fd
+else
+  echo "  [install] fd-find..."
+  sudo apt-get install -y fd-find
+  sudo ln -sf "$(which fdfind)" /usr/local/bin/fd
+fi
 install_if_missing zoxide
 
 # ──────────────────────────────────────────────
@@ -126,18 +135,22 @@ install_if_missing zoxide
 echo ""
 echo "==> Editor"
 
-# neovim: apt ships 0.6 on Ubuntu 22.04 — install latest from GitHub tarball instead
 if command -v nvim &>/dev/null; then
   echo "  [ok] nvim already installed"
+elif $IS_MACOS; then
+  $PKG_INSTALL neovim
 else
+  # apt ships 0.6 on Ubuntu 22.04 — install latest from GitHub tarball
   echo "  [install] nvim (latest stable)..."
-  NVIM_VERSION=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest     | grep '"tag_name"' | cut -d'"' -f4)
-  curl -Lo /tmp/nvim.tar.gz     "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
+  NVIM_VERSION=$(curl -s https://api.github.com/repos/neovim/neovim/releases/latest \
+    | grep '"tag_name"' | cut -d'"' -f4)
+  curl -Lo /tmp/nvim.tar.gz \
+    "https://github.com/neovim/neovim/releases/download/${NVIM_VERSION}/nvim-linux-x86_64.tar.gz"
   sudo tar -xzf /tmp/nvim.tar.gz -C /opt/
   sudo ln -sf /opt/nvim-linux-x86_64/bin/nvim /usr/local/bin/nvim
   rm -f /tmp/nvim.tar.gz
 fi
- 
+
 # neovide
 if $IS_MACOS; then
   if ! command -v neovide &>/dev/null; then
@@ -151,7 +164,7 @@ elif grep -qi microsoft /proc/version 2>/dev/null; then
   # WSL: neovide is a Windows GUI app — install it on the Windows side.
   # Download from: https://github.com/neovide/neovide/releases/latest
   # Then add it to your Windows PATH so it can be launched from WSL.
-  if command -v neovide.exe --wsl &>/dev/null; then
+  if command -v neovide.exe &>/dev/null; then
     echo "  [ok] neovide already accessible from WSL"
   else
     echo "  [info] neovide: install the Windows .msi from https://github.com/neovide/neovide/releases"
@@ -311,8 +324,8 @@ else
   install_if_missing curl
   install_if_missing fc-cache fontconfig
   if command -v apt-get &>/dev/null; then
-    install_if_missing fc-cache fonts-liberation-mono
-    install_if_missing fc-cache fonts-dejavu-core
+    $PKG_INSTALL fonts-liberation2
+    $PKG_INSTALL fonts-dejavu-core
   fi
 
   FONT_DIR="/usr/local/share/fonts/meslo-lg-nerd-font"

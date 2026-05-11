@@ -34,7 +34,6 @@ files=(
   ".wezterm.lua"
   ".vimrc"
   ".config/starship.toml"
-  ".config/glab-cli/aliases.yml"
   ".config/nvim"
 )
 
@@ -151,7 +150,7 @@ if [[ "$remove_pkgs" =~ ^[Yy]$ ]]; then
   fi
 
   # GitHub release binaries
-  for bin in starship lazygit vivid duckdb yq k9s kubectx kubens glab fd; do
+  for bin in starship lazygit vivid duckdb yq k9s kubectx kubens fd; do
     if [ -f "/usr/local/bin/$bin" ]; then
       sudo rm -f "/usr/local/bin/$bin"
       echo "  [removed] /usr/local/bin/$bin"

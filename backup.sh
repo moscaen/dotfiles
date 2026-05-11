@@ -26,7 +26,6 @@ dotfiles=(
   "$HOME/.tmux.conf"
   "$HOME/.vimrc"
   "$HOME/.config/starship.toml"
-  "$HOME/.config/glab-cli/aliases.yml"
   "$HOME/.config/nvim"
   "$HOME/.config/k9s"
 )

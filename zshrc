@@ -38,8 +38,8 @@ else
   export EDITOR='nvim'
 fi
 
-# WSL-only Neovide alias
-if ! $IS_MACOS; then
+# WSL: neovide runs as a Windows GUI app
+if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
   alias neovide='neovide.exe --wsl'
 fi
 
