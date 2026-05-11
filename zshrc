@@ -22,7 +22,7 @@ bindkey -e
 
 # Completion system
 autoload -Uz compinit
-compinit
+compinit -u 2>/dev/null
 
 zstyle ':completion:*' menu select
 zstyle ':completion:*' matcher-list 'm:{a-z}={A-Z}'
@@ -48,6 +48,10 @@ fi
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
   export PATH="$HOME/.local/bin:$PATH"
 fi
+# Ensure /usr/local/bin is prioritised (needed on WSL)
+if [[ ":$PATH:" != *":/usr/local/bin:"* ]]; then
+  export PATH="/usr/local/bin:$PATH"
+fi
 
 # ──────────────────────────────────────────────
 # Tool completions (replaces oh-my-zsh plugins)
@@ -58,9 +62,13 @@ if command -v kubectl &>/dev/null; then
   alias k="kubectl"
 fi
 
-# docker
+# docker — guard against Docker Desktop WSL error output being sourced
 if command -v docker &>/dev/null; then
-  source <(docker completion zsh 2>/dev/null)
+  _dc=$(docker completion zsh 2>/dev/null) \
+    && [[ "$_dc" == *"compdef"* || "$_dc" == *"function"* ]] \
+    && eval "$_dc" \
+    || true
+  unset _dc
 fi
 
 # GCP
