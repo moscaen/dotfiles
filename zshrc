@@ -122,11 +122,14 @@ else
   LG_CONFIG_FILE="$HOME/.config/lazygit/config.yml,$HOME/lazygit/themes-mergable/macchiato/blue.yml"
 fi
 
+# bat (cat replacement)
+if command -v bat &>/dev/null; then
+  alias cat="bat"
+  export BAT_THEME="Catppuccin Macchiato"
+fi
+
 # dbt
 alias dbtf="$HOME/.local/bin/dbt"
-
-# project shortcuts
-# alias
 
 
 # ──────────────────────────────────────────────
@@ -160,6 +163,13 @@ DOTFILES_DIR="$HOME/repos/dotfiles"
 source "$DOTFILES_DIR/zsh/catppuccin_macchiato-zsh-syntax-highlighting.zsh"
 source "$DOTFILES_DIR/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 source "$DOTFILES_DIR/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+
+# ──────────────────────────────────────────────
+# zoxide (smarter cd)
+# ──────────────────────────────────────────────
+if command -v zoxide &>/dev/null; then
+  eval "$(zoxide init zsh)"
+fi
 
 # ──────────────────────────────────────────────
 # Prompt — Starship

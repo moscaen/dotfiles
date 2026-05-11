@@ -67,6 +67,8 @@ install_if_missing fzf
 install_if_missing eza
 install_if_missing vivid
 install_if_missing ranger
+install_if_missing bat
+install_if_missing tldr
 
 # ──────────────────────────────────────────────
 # Search & navigation
@@ -75,6 +77,7 @@ echo ""
 echo "==> Search & navigation"
 install_if_missing rg ripgrep
 install_if_missing fd
+install_if_missing zoxide
 
 # ──────────────────────────────────────────────
 # Editor
@@ -110,6 +113,16 @@ else
   echo "  [install] uv..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
+install_if_missing marimo
+
+# ──────────────────────────────────────────────
+# Data tools
+# ──────────────────────────────────────────────
+echo ""
+echo "==> Data tools"
+install_if_missing duckdb
+install_if_missing jq
+install_if_missing yq
 
 # ──────────────────────────────────────────────
 # Kubernetes

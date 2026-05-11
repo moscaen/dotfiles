@@ -92,17 +92,18 @@ cd ~/repos/dotfiles
 
 ## Tools installed by setup.sh
 
-| Category          | Tools                         |
-| ----------------- | ----------------------------- |
-| Shell & prompt    | zsh, starship                 |
-| Terminal          | tmux, fzf, eza, vivid, ranger |
-| Search            | ripgrep, fd                   |
-| Editor            | neovim, neovide (macOS)       |
-| Git               | lazygit, glab                 |
-| Python            | uv                            |
-| Kubernetes        | k9s, kubectx                  |
-| Terminal emulator | wezterm (macOS)               |
-| Font              | MesloLGS Nerd Font (macOS)    |
+| Category          | Tools                                  |
+| ----------------- | -------------------------------------- |
+| Shell & prompt    | zsh, starship                          |
+| Terminal          | tmux, fzf, eza, vivid, ranger, bat, tldr |
+| Search            | ripgrep, fd, zoxide                    |
+| Editor            | neovim, neovide (macOS)                |
+| Git               | lazygit, glab                          |
+| Python            | uv, marimo                             |
+| Data              | duckdb, jq, yq                         |
+| Kubernetes        | k9s, kubectx                           |
+| Terminal emulator | wezterm (macOS)                        |
+| Font              | MesloLGS Nerd Font (macOS)             |
 
 ## Secrets
 
