@@ -135,6 +135,15 @@ install_if_missing zoxide
 echo ""
 echo "==> Editor"
 
+# vim-plug
+if [ -f "$HOME/.vim/autoload/plug.vim" ]; then
+  echo "  [ok] vim-plug already installed"
+else
+  echo "  [install] vim-plug..."
+  curl -fLo "$HOME/.vim/autoload/plug.vim" --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+fi
+
 if command -v nvim &>/dev/null; then
   echo "  [ok] nvim already installed"
 elif $IS_MACOS; then

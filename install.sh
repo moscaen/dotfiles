@@ -63,6 +63,36 @@ fi
 
 
 # ──────────────────────────────────────────────
+# Windows fonts — MesloLGS NF (for neovide)
+# (WSL only: copies and registers fonts in Windows)
+# ──────────────────────────────────────────────
+if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
+  echo ""
+  echo "==> Installing MesloLGS NF fonts for Windows (neovide)..."
+  WIN_USER=$(cmd.exe /c "echo %USERNAME%" 2>/dev/null | tr -d '\r')
+  WIN_FONTS="/mnt/c/Users/$WIN_USER/AppData/Local/Microsoft/Windows/Fonts"
+  WIN_FONTS_DOS="C:\\Users\\${WIN_USER}\\AppData\\Local\\Microsoft\\Windows\\Fonts"
+  REG_KEY="HKCU\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Fonts"
+  LINUX_FONTS="/usr/local/share/fonts/meslo-lg-nerd-font"
+  if [ ! -d "$LINUX_FONTS" ]; then
+    echo "  [skip] MesloLGS NF not found in $LINUX_FONTS — run setup.sh first"
+  else
+    mkdir -p "$WIN_FONTS"
+    for ttf in "$LINUX_FONTS"/*.ttf; do
+      fname="$(basename "$ttf")"
+      reg_name="${fname%.ttf} (TrueType)"
+      if [ -f "$WIN_FONTS/$fname" ]; then
+        echo "  [ok] $fname already in Windows fonts"
+      else
+        cp "$ttf" "$WIN_FONTS/$fname"
+        echo "  [copied] $fname"
+      fi
+      reg.exe add "$REG_KEY" /v "$reg_name" /t REG_SZ /d "${WIN_FONTS_DOS}\\${fname}" /f >/dev/null 2>&1
+    done
+  fi
+fi
+
+# ──────────────────────────────────────────────
 # Windows Terminal — Catppuccin Macchiato theme
 # (WSL only: patches the Windows-side settings.json)
 # ──────────────────────────────────────────────

@@ -7,6 +7,5 @@ if vim.g.neovide then
 
   vim.g.neovide_macos_simple_fullscreen = false
   
-  -- Use Liberation Mono as fallback on all platforms
-  vim.o.guifont = "Liberation Mono:h12"
+  vim.o.guifont = "MesloLGS NF:h12"
 end
