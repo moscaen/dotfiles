@@ -173,8 +173,15 @@ if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
   else
     cp "$VSCODE_SETTINGS" "${VSCODE_SETTINGS}.backup"
 
-    # VS Code settings.json is JSONC — strip trailing commas before passing to jq
-    sed 's/,\(\s*[}\]]\)/\1/g' "$VSCODE_SETTINGS" \
+    # VS Code settings.json is JSONC — strip comments and trailing commas before jq
+    python3 -c "
+import re, sys
+s = sys.stdin.read()
+s = re.sub(r'//[^\n]*', '', s)
+s = re.sub(r'/\*.*?\*/', '', s, flags=re.DOTALL)
+s = re.sub(r',(\s*[}\]])', r'\1', s)
+print(s)
+" < "$VSCODE_SETTINGS" \
       | jq '
           .["workbench.colorTheme"]   = "Catppuccin Macchiato" |
           .["workbench.iconTheme"]    = "catppuccin-macchiato" |
