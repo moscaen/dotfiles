@@ -69,7 +69,22 @@ fi
 echo ""
 echo "==> Terminal tools"
 install_if_missing tmux
-install_if_missing fzf
+# fzf: apt ships an old version; install from GitHub to get --zsh support (0.48+)
+if command -v fzf &>/dev/null && fzf --zsh &>/dev/null 2>&1; then
+  echo "  [ok] fzf already installed (supports --zsh)"
+else
+  echo "  [install] fzf (latest)..."
+  FZF_VERSION=$(curl -s https://api.github.com/repos/junegunn/fzf/releases/latest \
+    | grep '"tag_name"' | cut -d'"' -f4 | sed 's/v//')
+  if $IS_MACOS; then
+    $PKG_INSTALL fzf
+  else
+    curl -Lo /tmp/fzf.tar.gz \
+      "https://github.com/junegunn/fzf/releases/download/v${FZF_VERSION}/fzf-${FZF_VERSION}-linux_amd64.tar.gz"
+    sudo tar -xzf /tmp/fzf.tar.gz -C /usr/local/bin fzf
+    rm -f /tmp/fzf.tar.gz
+  fi
+fi
 # eza is not in standard apt — add the official eza apt repo
 if command -v eza &>/dev/null; then
   echo "  [ok] eza already installed"

@@ -96,7 +96,7 @@ fi
 
 # fzf
 [ -f ~/.fzf.zsh ] && source ~/.fzf.zsh
-if command -v fzf &>/dev/null; then
+if command -v fzf &>/dev/null && fzf --zsh &>/dev/null 2>&1; then
   source <(fzf --zsh)
 fi
 

@@ -173,11 +173,13 @@ if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
   else
     cp "$VSCODE_SETTINGS" "${VSCODE_SETTINGS}.backup"
 
-    jq '
-      .["workbench.colorTheme"]         = "Catppuccin Macchiato" |
-      .["workbench.iconTheme"]          = "catppuccin-macchiato" |
-      .["catppuccin.accentColor"]       = "blue"
-    ' "$VSCODE_SETTINGS" > /tmp/vscode_settings.json \
+    # VS Code settings.json is JSONC — strip trailing commas before passing to jq
+    sed 's/,\(\s*[}\]]\)/\1/g' "$VSCODE_SETTINGS" \
+      | jq '
+          .["workbench.colorTheme"]   = "Catppuccin Macchiato" |
+          .["workbench.iconTheme"]    = "catppuccin-macchiato" |
+          .["catppuccin.accentColor"] = "blue"
+        ' > /tmp/vscode_settings.json \
       && mv /tmp/vscode_settings.json "$VSCODE_SETTINGS"
 
     echo "  [applied] color theme, icon theme, accent color"
