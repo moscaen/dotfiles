@@ -339,6 +339,12 @@ else
   echo "  [install] node LTS..."
   nvm install --lts
 fi
+if command -v claude &>/dev/null; then
+  echo "  [ok] claude already installed"
+else
+  echo "  [install] claude..."
+  npm install -g @anthropic-ai/claude-code
+fi
 
 # ──────────────────────────────────────────────
 # Data tools
