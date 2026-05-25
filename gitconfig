@@ -5,3 +5,5 @@
 	fileMode = false
 [fetch]
 	prune = true
+[pull]
+	rebase = true
