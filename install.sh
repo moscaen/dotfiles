@@ -21,17 +21,20 @@ files=(
 )
 
 # k9s: macOS uses ~/Library/Application Support, Linux uses ~/.config
+# lazygit: same pattern
 if $IS_MACOS; then
   files+=(
     "config/k9s/config.yaml:Library/Application Support/k9s/config.yaml"
     "config/k9s/aliases.yaml:Library/Application Support/k9s/aliases.yaml"
     "config/k9s/skins:Library/Application Support/k9s/skins"
+    "config/lazygit/config.yml:Library/Application Support/lazygit/config.yml"
   )
 else
   files+=(
     "config/k9s/config.yaml:.config/k9s/config.yaml"
     "config/k9s/aliases.yaml:.config/k9s/aliases.yaml"
     "config/k9s/skins:.config/k9s/skins"
+    "config/lazygit/config.yml:.config/lazygit/config.yml"
   )
 fi
 
@@ -184,7 +187,7 @@ print(s)
 " < "$VSCODE_SETTINGS" \
       | jq '
           .["workbench.colorTheme"]   = "Catppuccin Macchiato" |
-          .["workbench.iconTheme"]    = "catppuccin-macchiato" |
+          .["workbench.iconTheme"]    = "vscode-icons" |
           .["catppuccin.accentColor"] = "blue"
         ' > /tmp/vscode_settings.json \
       && mv /tmp/vscode_settings.json "$VSCODE_SETTINGS"

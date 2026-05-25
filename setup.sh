@@ -398,7 +398,7 @@ if command -v code &>/dev/null; then
     fi
   }
   install_vscode_ext "catppuccin.catppuccin-vsc"
-  install_vscode_ext "catppuccin.catppuccin-vsc-icons"
+  install_vscode_ext "vscode-icons-team.vscode-icons"
 else
   echo "  [skip] 'code' not in PATH — extensions will be applied by install.sh when VS Code is available"
 fi

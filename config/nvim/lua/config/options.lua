@@ -3,6 +3,7 @@
 vim.g.lazyvim_python_ruff = "ruff"
 
 vim.opt.winbar = "%=%m %f"
+vim.opt.wrap = true
 
 vim.diagnostic.config({
   virtual_text = false,
