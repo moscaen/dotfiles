@@ -2,10 +2,36 @@
 
 Personal development environment configuration. Catppuccin Macchiato theme everywhere. Works on macOS and WSL.
 
+## Prerequisites — SSH access to GitHub
+
+You need GitHub SSH access before you can clone this repo.
+
+**Option A — generate an SSH key manually**
+
+```bash
+ssh-keygen -t ed25519 -C "your@email.com"
+cat ~/.ssh/id_ed25519.pub   # copy this
+```
+
+Paste the key at **github.com → Settings → SSH and GPG keys → New SSH key**, then clone.
+
+**Option B — clone via HTTPS (public repo), set up SSH after**
+
+```bash
+git clone https://github.com/<you>/dotfiles.git ~/repos/dotfiles
+```
+
+After `setup.sh` finishes, authenticate with `gh` and switch to SSH:
+
+```bash
+gh auth login        # follow prompts, choose SSH
+git -C ~/repos/dotfiles remote set-url origin git@github.com:<you>/dotfiles.git
+```
+
 ## Quick start
 
 ```bash
-git clone --recursive <your-repo-url> ~/repos/dotfiles
+git clone --recursive git@github.com:<you>/dotfiles.git ~/repos/dotfiles
 cd ~/repos/dotfiles
 
 # Install all tools + link configs

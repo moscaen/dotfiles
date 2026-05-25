@@ -50,11 +50,31 @@ install_if_missing() {
 }
 
 # ──────────────────────────────────────────────
+# Build essentials (Linux only)
+# ──────────────────────────────────────────────
+if ! $IS_MACOS; then
+  if command -v gcc &>/dev/null; then
+    echo "  [ok] build-essential already installed"
+  else
+    echo "  [install] build-essential..."
+    sudo apt-get install -y build-essential
+  fi
+  install_if_missing unzip
+fi
+
+# ──────────────────────────────────────────────
 # Shell & prompt
 # ──────────────────────────────────────────────
 echo ""
 echo "==> Shell & prompt"
 install_if_missing zsh
+# Set zsh as the default shell
+if [ "$SHELL" = "$(which zsh)" ]; then
+  echo "  [ok] zsh is already the default shell"
+else
+  echo "  [chsh] setting zsh as default shell..."
+  chsh -s "$(which zsh)"
+fi
 # starship is not in apt — use the official installer
 if command -v starship &>/dev/null; then
   echo "  [ok] starship already installed"
@@ -69,6 +89,22 @@ fi
 echo ""
 echo "==> Terminal tools"
 install_if_missing tmux
+# Tmux plugins — cloned to the paths expected by tmux.conf
+TMUX_PLUGINS="$HOME/.config/tmux/plugins"
+mkdir -p "$TMUX_PLUGINS"
+_clone_or_skip() {
+  local repo="$1" dest="$2"
+  if [ -d "$dest/.git" ]; then
+    echo "  [ok] $(basename "$dest") already installed"
+  else
+    echo "  [install] $(basename "$dest")..."
+    git clone --depth=1 "https://github.com/$repo" "$dest"
+  fi
+}
+_clone_or_skip "catppuccin/tmux"           "$TMUX_PLUGINS/catppuccin/tmux"
+_clone_or_skip "tmux-plugins/tmux-cpu"     "$TMUX_PLUGINS/tmux-plugins/tmux-cpu"
+_clone_or_skip "tmux-plugins/tmux-battery" "$TMUX_PLUGINS/tmux-plugins/tmux-battery"
+unset -f _clone_or_skip
 # fzf: apt ships an old version; install from GitHub to get --zsh support (0.48+)
 if command -v fzf &>/dev/null && fzf --zsh &>/dev/null 2>&1; then
   echo "  [ok] fzf already installed (supports --zsh)"
@@ -124,7 +160,7 @@ else
   sudo dpkg -i /tmp/bat.deb
   rm -f /tmp/bat.deb
 fi
-install_if_missing tldr
+install_if_missing tldr tealdeer
 
 # ──────────────────────────────────────────────
 # Search & navigation
@@ -212,6 +248,20 @@ fi
 # ──────────────────────────────────────────────
 echo ""
 echo "==> Git tools"
+# gh is not in standard apt — add GitHub CLI apt repo
+if command -v gh &>/dev/null; then
+  echo "  [ok] gh already installed"
+elif $IS_MACOS; then
+  $PKG_INSTALL gh
+else
+  curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+    | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+  sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+  echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+    | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+  sudo apt-get update -qq
+  sudo apt-get install -y gh
+fi
 # lazygit is not in apt — install via GitHub release
 if command -v lazygit &>/dev/null; then
   echo "  [ok] lazygit already installed"
@@ -224,6 +274,15 @@ else
   tar -xzf /tmp/lazygit.tar.gz -C /tmp lazygit
   sudo install /tmp/lazygit /usr/local/bin/lazygit
   rm /tmp/lazygit.tar.gz /tmp/lazygit
+fi
+# lazygit Catppuccin theme — separate repo, referenced by LG_CONFIG_FILE in zshrc
+LAZYGIT_THEME_DIR="$HOME/lazygit/themes-mergable"
+if [ -d "$LAZYGIT_THEME_DIR/.git" ]; then
+  echo "  [ok] lazygit Catppuccin theme already installed"
+else
+  echo "  [install] lazygit Catppuccin theme..."
+  mkdir -p "$(dirname "$LAZYGIT_THEME_DIR")"
+  git clone --depth=1 https://github.com/catppuccin/lazygit "$LAZYGIT_THEME_DIR"
 fi
 
 
@@ -238,16 +297,47 @@ else
   echo "  [install] uv..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
 fi
-# marimo is a Python package — install via uv (already installed above) or pip
+# Ensure uv is in PATH for the rest of this session
+[ -f "$HOME/.local/bin/env" ] && source "$HOME/.local/bin/env" || export PATH="$HOME/.local/bin:$PATH"
 if command -v marimo &>/dev/null; then
   echo "  [ok] marimo already installed"
 else
   echo "  [install] marimo..."
-  if command -v uv &>/dev/null; then
-    uv tool install marimo
-  else
-    pip install --user marimo
-  fi
+  uv tool install marimo
+fi
+
+# ──────────────────────────────────────────────
+# Rust
+# ──────────────────────────────────────────────
+echo ""
+echo "==> Rust"
+if command -v rustup &>/dev/null; then
+  echo "  [ok] rustup already installed"
+else
+  echo "  [install] rustup..."
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+fi
+
+# ──────────────────────────────────────────────
+# Node.js (via nvm)
+# ──────────────────────────────────────────────
+echo ""
+echo "==> Node.js"
+export NVM_DIR="$HOME/.nvm"
+if [ -d "$NVM_DIR" ]; then
+  echo "  [ok] nvm already installed"
+else
+  echo "  [install] nvm..."
+  NVM_VERSION=$(curl -s https://api.github.com/repos/nvm-sh/nvm/releases/latest \
+    | grep '"tag_name"' | cut -d'"' -f4)
+  curl -o- "https://raw.githubusercontent.com/nvm-sh/nvm/${NVM_VERSION}/install.sh" | bash
+fi
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+if command -v node &>/dev/null; then
+  echo "  [ok] node $(node --version) already installed"
+else
+  echo "  [install] node LTS..."
+  nvm install --lts
 fi
 
 # ──────────────────────────────────────────────
@@ -286,6 +376,17 @@ fi
 # ──────────────────────────────────────────────
 echo ""
 echo "==> Kubernetes"
+# kubectl — required by k9s, kubectx, and zshrc completions
+if command -v kubectl &>/dev/null; then
+  echo "  [ok] kubectl already installed"
+elif $IS_MACOS; then
+  $PKG_INSTALL kubectl
+else
+  KUBECTL_VERSION=$(curl -sL https://dl.k8s.io/release/stable.txt)
+  curl -Lo /tmp/kubectl "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+  sudo install -o root -g root -m 0755 /tmp/kubectl /usr/local/bin/kubectl
+  rm -f /tmp/kubectl
+fi
 # k9s is not in apt — install via GitHub release
 if command -v k9s &>/dev/null; then
   echo "  [ok] k9s already installed"

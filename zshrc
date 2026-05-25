@@ -47,6 +47,8 @@ fi
 # PATH
 # ──────────────────────────────────────────────
 export PATH="$HOME/.duckdb/cli/latest:$PATH"
+# Rust / cargo
+[ -f "$HOME/.cargo/env" ] && source "$HOME/.cargo/env"
 if $IS_MACOS; then
   export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"
 fi
@@ -74,18 +76,6 @@ if command -v docker &>/dev/null; then
     && eval "$_dc" \
     || true
   unset _dc
-fi
-
-# GCP
-if command -v brew &>/dev/null; then
-  source "$(brew --prefix)/share/google-cloud-sdk/path.zsh.inc"
-  source "$(brew --prefix)/share/google-cloud-sdk/completion.zsh.inc"
-elif [ -f /usr/share/google-cloud-sdk/path.zsh.inc ]; then
-  source /usr/share/google-cloud-sdk/path.zsh.inc
-  source /usr/share/google-cloud-sdk/completion.zsh.inc
-elif [ -f "$HOME/google-cloud-sdk/path.zsh.inc" ]; then
-  source "$HOME/google-cloud-sdk/path.zsh.inc"
-  source "$HOME/google-cloud-sdk/completion.zsh.inc"
 fi
 
 # uv / uvx
