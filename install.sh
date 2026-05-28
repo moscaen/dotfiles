@@ -151,9 +151,10 @@ if ! $IS_MACOS && grep -qi microsoft /proc/version 2>/dev/null; then
     # Apply to default profile
     jq --arg s "$SCHEME_NAME" --arg t "$THEME_NAME" '
       .profiles.defaults.colorScheme = $s |
+      .profiles.defaults.font.face = "MesloLGS NF" |
       .theme = $t
     ' "$WT_SETTINGS" > /tmp/wt_settings.json && mv /tmp/wt_settings.json "$WT_SETTINGS"
-    echo "  [applied] set as default color scheme and theme"
+    echo "  [applied] set as default color scheme, font (MesloLGS NF), and theme"
     echo "  [backup]  original saved to ${WT_SETTINGS}.backup"
   fi
 fi
