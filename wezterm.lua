@@ -4,9 +4,9 @@ local config = wezterm.config_builder()
 
 config.color_scheme = "Catppuccin Macchiato"
 config.font = wezterm.font_with_fallback({
-  wezterm.font("MesloLGS NF"),
-  wezterm.font("Cascadia Code PL"),
-  wezterm.font("DejaVu Sans Mono"),
+  "MesloLGS NF",
+  "Cascadia Code PL",
+  "DejaVu Sans Mono",
 })
 
 config.keys = {
